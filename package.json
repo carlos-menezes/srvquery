@@ -1,0 +1,26 @@
+{
+  "name": "srvquery",
+  "scripts": {
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter=@srvquery/*",
+    "build:packages:core": "turbo run build --filter=@srvquery/core",
+    "build:packages:protocols": "turbo run build --filter=@srvquery/protocol-*",
+    "build:packages:games": "turbo run build --filter=@srvquery/game-*",
+    "test": "turbo run test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "turbo": "^2.10.12"
+  },
+  "packageManager": "pnpm@11.25.0+sha512.5cde925b4f075f725eb71fbae18a42ffe784524789f19b61c731cb8721ec28aaee160e01a8d5af4fedb2a42cdbf300efe23db356b0d4a17b4d63e11f8ab7c956"
+}
