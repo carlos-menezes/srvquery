@@ -1,7 +1,6 @@
 # @srvquery/core
 
-[![npm version](https://img.shields.io/npm/v/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)
-[![npm downloads](https://img.shields.io/npm/dm/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)
+![npm Version](https://shieldcn.dev/npm/@srvquery/core.svg?variant=secondary) ![npm Weekly Downloads](https://shieldcn.dev/npm/@srvquery/core/downloads.svg)
 
 Shared binary parsing and UDP query primitives for `srvquery` packages.
 
@@ -11,7 +10,7 @@ Shared binary parsing and UDP query primitives for `srvquery` packages.
 pnpm add @srvquery/core
 ```
 
-## Usage
+## API
 
 ### BufferCursor
 
@@ -72,10 +71,11 @@ console.log(cursor.readRemaining()); // <Buffer dd ee>
 
 ### createUdpSocket
 
-`using` invokes `Symbol.dispose` when the socket leaves scope:
+Raw UDP sockets do not retry unless `retry` is provided. `using` invokes `Symbol.dispose` when the
+socket leaves scope:
 
 ```ts
-import { createUdpSocket } from "@srvquery/core";
+import { backoffStrategy, createUdpSocket } from "@srvquery/core";
 
 using socket = createUdpSocket(
   {
@@ -85,6 +85,10 @@ using socket = createUdpSocket(
   {
     timeout: 2_000,
     type: "udp4",
+    retry: {
+      retries: 3,
+      strategy: backoffStrategy,
+    },
   },
 );
 
@@ -106,3 +110,21 @@ const socket = createUdpSocket({ host: "127.0.0.1", port: 27015 });
 
 socket.close();
 ```
+
+### withRetry
+
+Use the retry helper independently when an asynchronous operation needs the same retry behavior:
+
+```ts
+import { backoffStrategy, withRetry } from "@srvquery/core";
+
+const result = await withRetry(query, {
+  retries: 3,
+  strategy: backoffStrategy,
+  fatal: (error) => error instanceof TypeError,
+});
+```
+
+The exported `RetryStrategy` type has the signature `(attempt: number) => number`. Its return value
+is the delay in milliseconds before the next attempt. The included `backoffStrategy` uses
+exponential delays of 100 ms, 200 ms, 400 ms, and so on.

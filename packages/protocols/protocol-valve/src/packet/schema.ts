@@ -5,6 +5,9 @@ const short = z.number().int().min(0).max(0xffff);
 const flag = z.union([z.literal(0), z.literal(1)]);
 const int32 = z.number().int().min(-0x80000000).max(0x7fffffff);
 
+/**
+ * Validates a Valve `A2S_INFO` response, including fields selected by the extra data flag.
+ */
 export const ValveServerInfoSchema = z
   .object({
     protocol: byte,
@@ -56,8 +59,10 @@ export const ValveServerInfoSchema = z
     requireFields(info.edf !== undefined && (info.edf & 0x01) !== 0, ["gameId"]);
   });
 
+/** Server metadata returned by a Valve `A2S_INFO` query. */
 export type ValveServerInfo = z.infer<typeof ValveServerInfoSchema>;
 
+/** Validates a player entry returned by a Valve `A2S_PLAYER` query. */
 export const ValvePlayerSchema = z.object({
   index: byte,
   name: z.string(),
@@ -65,23 +70,27 @@ export const ValvePlayerSchema = z.object({
   duration: z.number().nonnegative(),
 });
 
+/** Validates the player list returned by a Valve `A2S_PLAYER` query. */
 export const ValvePlayersSchema = z.array(ValvePlayerSchema);
+/** Validates a rule whose key and value could not be decoded as strings. */
 export const ValveBinaryRuleSchema = z.object({
   key: z.instanceof(Buffer),
   value: z.instanceof(Buffer),
 });
-export const ValveRulesSchema = z.object({
-  rules: z.record(z.string(), z.string()),
-  binaryRules: z.array(ValveBinaryRuleSchema),
-});
+/** Validates the payload returned by a legacy Valve ping query. */
 export const ValvePingSchema = z.object({
   payload: z.string(),
 });
+/** Validates the signed 32-bit challenge token returned by a Valve server. */
 export const ValveChallengeSchema = int32;
 
+/** Player entry containing its response index, name, score, and connected duration. */
 export type ValvePlayer = z.infer<typeof ValvePlayerSchema>;
+/** Player entries returned by a Valve `A2S_PLAYER` query. */
 export type ValvePlayers = z.infer<typeof ValvePlayersSchema>;
+/** Rule preserved as raw bytes when it cannot be represented as a string pair. */
 export type ValveBinaryRule = z.infer<typeof ValveBinaryRuleSchema>;
-export type ValveRules = z.infer<typeof ValveRulesSchema>;
+/** Payload returned by a legacy Valve ping query. */
 export type ValvePing = z.infer<typeof ValvePingSchema>;
+/** Signed 32-bit challenge token used by protected Valve queries. */
 export type ValveChallenge = z.infer<typeof ValveChallengeSchema>;

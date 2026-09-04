@@ -1,4 +1,5 @@
 import dns from "node:dns";
+import { OpenMPDnsResolutionError } from "./errors";
 
 /**
  * Resolves the given IP address to its IPv4 address using DNS lookup.
@@ -10,7 +11,7 @@ import dns from "node:dns";
 export const resolveIpv4 = (ip: string): Promise<string> =>
   new Promise((resolve, reject) => {
     dns.lookup(ip, { family: 4 }, (err, address) => {
-      if (err) reject(err);
+      if (err) reject(new OpenMPDnsResolutionError({ host: ip, cause: err }));
       else resolve(address);
     });
   });

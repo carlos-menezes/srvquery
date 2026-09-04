@@ -1,11 +1,16 @@
 import { OpenMPProtocolRequestOpcode, requestOpcodes } from "./opcodes";
 
+/** Values encoded into an open.mp query request packet. */
 export type BuildRequestPacketParams = {
+  /** Query opcode to encode. */
   opcode: OpenMPProtocolRequestOpcode;
+  /** Target IPv4 address embedded in the packet header. */
   ip: string;
+  /** Target port embedded in little-endian order. */
   port: number;
 };
 
+/** Length in bytes of an open.mp query packet header. */
 export const packetHeaderLength = 11;
 
 /**

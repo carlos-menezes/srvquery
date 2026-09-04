@@ -1,5 +1,3 @@
-import { BufferCursor } from "@srvquery/core";
-
 /**
  * Reassembles fragmented packets into a single contiguous buffer.
  *
@@ -8,9 +6,9 @@ import { BufferCursor } from "@srvquery/core";
  */
 export const combineFragments = (packets: Buffer[]): Buffer => {
   const fragments = packets.map((packet) => {
-    const packetNumber = packet.readUInt8(10);
+    const packetNumber = packet.readUInt8(9);
     // size is 2 bytes
-    const data = packet.subarray(13);
+    const data = packet.subarray(12);
     return { packetNumber, data };
   });
 

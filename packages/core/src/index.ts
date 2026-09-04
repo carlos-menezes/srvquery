@@ -13,3 +13,13 @@ export {
 } from "./net/udp-socket";
 export { QuerySocketError, QueryTimeoutError } from "./net/errors";
 //#endregion
+
+//#region util/
+export {
+  type RetryOptions,
+  type RetryStrategy,
+  backoffStrategy,
+  defaultRetryOptions,
+  withRetry,
+} from "./util/retry";
+//#endregion

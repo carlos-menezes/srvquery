@@ -1,16 +1,18 @@
 import { requestOpcodes, ValveProtocolRequestOpcode } from "./opcodes";
 
+/** Values encoded into a Valve server query request packet. */
 export type BuildRequestPacketParams = {
+  /** Query opcode to encode. */
   opcode: ValveProtocolRequestOpcode;
+  /** Challenge token supplied for protected query types. */
   challenge?: number;
 };
 
 /**
- * Builds a request packet for the OpenMP protocol.
- * @link https://open.mp/docs/tutorials/QueryMechanism#serialized-data
- *
- * @param param0 The parameters for building the packet header, including the opcode, IP address, and port number.
- * @returns A Buffer containing the request packet.
+ * Builds a Valve server query request packet.
+ * @param params Opcode and optional challenge token to encode.
+ * @returns Encoded request packet.
+ * @link https://developer.valvesoftware.com/wiki/Server_queries#Requests
  */
 export const buildRequestPacket = ({ opcode, challenge }: BuildRequestPacketParams): Buffer => {
   const chunks: number[] = [0xff, 0xff, 0xff, 0xff, requestOpcodes[opcode]];
@@ -21,11 +23,9 @@ export const buildRequestPacket = ({ opcode, challenge }: BuildRequestPacketPara
       break;
     }
     case "PLAYERS":
+    case "RULES":
       challenge ??= -1;
       break;
-    // case "RULES":
-    //   challenge ??= -1;
-    //   break;
     case "PING":
     case "SERVERQUERY_GETCHALLENGE":
       break;

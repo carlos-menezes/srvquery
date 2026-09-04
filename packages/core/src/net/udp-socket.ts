@@ -1,9 +1,8 @@
-import { ExtractOptional } from "../util/types";
 import dgram from "node:dgram";
 import { QuerySocketError, QueryTimeoutError } from "./errors";
-import { withRetry } from "../util/retry";
-import { BufferCursor } from "../bin/buffer-cursor";
+import { RetryOptions, withRetry } from "../util/retry";
 
+/** Destination addressed by a UDP query socket. */
 export type CreateUdpSocketParams = {
   /**
    * Target host.
@@ -15,6 +14,7 @@ export type CreateUdpSocketParams = {
   port: number;
 };
 
+/** Transport and retry settings for a UDP query socket. */
 export type CreateUdpSocketOptions = {
   /**
    * Type of socket (udp4 or udp6).
@@ -26,13 +26,17 @@ export type CreateUdpSocketOptions = {
    * @default 2000
    */
   timeout?: number;
+  /** Retry behavior for each call to `send`. Retries are disabled when omitted. */
+  retry?: RetryOptions;
 };
 
+/** Payload sent by a UDP query. */
 export type UdpSocketSendParams = {
   /** Payload to send over the UDP socket. */
   payload: Buffer;
 };
 
+/** Packet filtering and completion callbacks for a UDP query. */
 export type UdpSocketSendOptions = {
   /**
    * Called to determine if a received packet should be accepted.
@@ -48,13 +52,31 @@ export type UdpSocketSendOptions = {
   end?: (packets: Buffer[]) => boolean;
 };
 
+/** UDP transport bound to a single query destination. */
+export interface UdpSocket {
+  /** Sends a payload and resolves with the accepted response packets. */
+  send(params: UdpSocketSendParams, options?: UdpSocketSendOptions): Promise<Buffer[]>;
+  /** Destination associated with this socket. */
+  readonly ctx: Readonly<CreateUdpSocketParams>;
+  /** Closes the underlying UDP socket. */
+  close(): void;
+  /** Closes the underlying UDP socket when leaving a `using` scope. */
+  [Symbol.dispose](): void;
+}
+
+/**
+ * Creates a reusable UDP query socket for one destination.
+ *
+ * Each `send` call collects accepted packets until its completion callback succeeds. When retry
+ * options are configured, a timed-out or failed send is repeated on the same socket.
+ */
 export const createUdpSocket = (
   { host, port }: CreateUdpSocketParams,
-  { timeout = 2000, type = "udp4" }: CreateUdpSocketOptions = {},
-) => {
+  { timeout = 2000, type = "udp4", retry }: CreateUdpSocketOptions = {},
+): UdpSocket => {
   const socket = dgram.createSocket({ type });
 
-  const send = (
+  const sendAttempt = (
     { payload }: UdpSocketSendParams,
     { accept = () => true, end = () => true }: UdpSocketSendOptions = {},
   ) => {
@@ -131,6 +153,19 @@ export const createUdpSocket = (
     });
   };
 
+  const send = async (params: UdpSocketSendParams, options: UdpSocketSendOptions = {}) => {
+    if (!retry) return sendAttempt(params, options);
+
+    try {
+      return await withRetry(() => sendAttempt(params, options), retry);
+    } catch (lastError) {
+      if (lastError instanceof QueryTimeoutError) {
+        throw new QueryTimeoutError({ host, port, attempts: retry.retries });
+      }
+      throw lastError;
+    }
+  };
+
   return {
     send,
     ctx: {
@@ -145,5 +180,3 @@ export const createUdpSocket = (
     },
   } as const;
 };
-
-export type UdpSocket = ReturnType<typeof createUdpSocket>;

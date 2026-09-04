@@ -12,6 +12,7 @@ import {
 } from "./schema";
 import { packetHeaderLength } from "./request";
 
+/** Deserializes an open.mp response from a cursor positioned at its packet header. */
 export type OpenMPPacketDeserializeFn = (cursor: BufferCursor) => unknown;
 
 const skipHeader = (cursor: BufferCursor) => {
@@ -108,6 +109,7 @@ export const deserializeClientListPacket = (cursor: BufferCursor): OpenMPClientL
 export const deserializePlayersPacket: OpenMPPacketDeserializeFn = (
   cursor: BufferCursor,
 ): OpenMPPlayers => {
+  skipHeader(cursor);
   const count = cursor.readUInt16LE();
 
   const players = Array.from({ length: count }, () => ({

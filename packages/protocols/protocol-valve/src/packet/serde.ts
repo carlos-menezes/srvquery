@@ -9,11 +9,8 @@ import {
   ValveServerInfoSchema,
 } from "./schema";
 
+/** Deserializes a Valve response from a cursor positioned at its payload opcode. */
 export type ValvePacketDeserializeFn = (cursor: BufferCursor) => unknown;
-
-const skipHeader = (cursor: BufferCursor) => {
-  cursor.readUInt8(); // Skip the header byte
-};
 
 /**
  * Deserializes a Valve server info packet from the given buffer cursor.
@@ -22,8 +19,6 @@ const skipHeader = (cursor: BufferCursor) => {
  * @returns The deserialized Valve server info object.
  */
 export const deserializeInfoPacket = (cursor: BufferCursor): ValveServerInfo => {
-  skipHeader(cursor);
-
   const info: Record<string, unknown> = {
     protocol: cursor.readUInt8(),
     name: cursor.readCString(),
@@ -74,8 +69,6 @@ export const deserializeInfoPacket = (cursor: BufferCursor): ValveServerInfo => 
  * @returns The deserialized Valve players object.
  */
 export const deserializePlayersPacket = (cursor: BufferCursor): ValvePlayers => {
-  skipHeader(cursor);
-
   const count = cursor.readUInt8();
   const players = Array.from({ length: count }, () => ({
     index: cursor.readUInt8(),
@@ -93,11 +86,14 @@ export const deserializePlayersPacket = (cursor: BufferCursor): ValvePlayers => 
  * @returns The deserialized challenge number.
  */
 export const deserializeChallengePacket = (cursor: BufferCursor): number => {
-  skipHeader(cursor);
   return ValveChallengeSchema.parse(cursor.readInt32LE());
 };
 
+/**
+ * Deserializes a legacy Valve ping response.
+ * @param cursor Cursor positioned at the response payload opcode.
+ * @returns Validated ping payload.
+ */
 export const deserializePingPacket = (cursor: BufferCursor): ValvePing => {
-  skipHeader(cursor);
   return ValvePingSchema.parse({ payload: cursor.readCString() });
 };

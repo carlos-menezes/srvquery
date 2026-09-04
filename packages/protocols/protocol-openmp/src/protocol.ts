@@ -3,6 +3,7 @@ import {
   createUdpSocket,
   CreateUdpSocketOptions,
   CreateUdpSocketParams,
+  defaultRetryOptions,
   UdpSocket,
 } from "@srvquery/core";
 import { randomBytes } from "node:crypto";
@@ -25,6 +26,7 @@ import {
   type OpenMPServerInfo,
 } from "./packet/schema";
 
+/** Connection and retry settings used to create an open.mp protocol client. */
 export type CreateOpenMPProtocolParams = CreateUdpSocketParams & CreateUdpSocketOptions;
 
 type OpenMPProtocolRequestParams<Opcode extends OpenMPProtocolRequestOpcode> = {
@@ -43,6 +45,14 @@ type OpenMPProtocolResponseMap = {
   PING: OpenMPPing;
 };
 
+/** Client for querying SA-MP and open.mp servers. */
+export interface OpenMPProtocol {
+  /** Queries one open.mp opcode and resolves with its corresponding response model. */
+  query<Opcode extends OpenMPProtocolRequestOpcode>(
+    params: OpenMPProtocolQueryParams<Opcode>,
+  ): Promise<OpenMPProtocolResponseMap[Opcode]>;
+}
+
 const deserializers = {
   INFO: deserializeInfoPacket,
   PING: deserializePingPacket,
@@ -51,14 +61,20 @@ const deserializers = {
   PLAYERS: deserializePlayersPacket,
 } as const satisfies Record<OpenMPProtocolRequestOpcode, OpenMPPacketDeserializeFn>;
 
+/**
+ * Creates a client for querying SA-MP and open.mp servers.
+ * @param params Target server and UDP transport settings.
+ * @returns A client whose `query` method returns the response type for the requested opcode.
+ */
 export const createOpenMPProtocol = ({
   host,
   port,
+  retry = defaultRetryOptions,
   ...socketOptions
-}: CreateOpenMPProtocolParams) => {
+}: CreateOpenMPProtocolParams): OpenMPProtocol => {
   const ipv4 = resolveIpv4(host);
 
-  async function _request<Opcode extends OpenMPProtocolRequestOpcode>(
+  async function request<Opcode extends OpenMPProtocolRequestOpcode>(
     { opcode }: OpenMPProtocolRequestParams<Opcode>,
     socket: UdpSocket,
   ): Promise<Buffer> {
@@ -96,8 +112,8 @@ export const createOpenMPProtocol = ({
   const query = async <Opcode extends OpenMPProtocolRequestOpcode>({
     opcode,
   }: OpenMPProtocolQueryParams<Opcode>): Promise<OpenMPProtocolResponseMap[Opcode]> => {
-    using socket = createUdpSocket({ host, port }, socketOptions);
-    const response = await _request({ opcode }, socket);
+    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry });
+    const response = await request({ opcode }, socket);
     const cursor = new BufferCursor(response);
     return deserializers[opcode](cursor) as OpenMPProtocolResponseMap[Opcode];
   };
@@ -106,5 +122,3 @@ export const createOpenMPProtocol = ({
     query,
   };
 };
-
-export type OpenMPProtocol = ReturnType<typeof createOpenMPProtocol>;

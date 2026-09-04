@@ -3,6 +3,7 @@ import {
   createUdpSocket,
   CreateUdpSocketOptions,
   CreateUdpSocketParams,
+  defaultRetryOptions,
   UdpSocket,
 } from "@srvquery/core";
 import { responseOpcodes, responseTypeOpcodes, ValveProtocolRequestOpcode } from "./packet/opcodes";
@@ -22,25 +23,58 @@ import {
   deserializePlayersPacket,
   ValvePacketDeserializeFn,
 } from "./packet/serde";
-
-type ValveProtocolQueryParams<Opcode extends ValveProtocolRequestOpcode> = {
-  opcode: Opcode;
-};
+import { serverBrowserProtocol3RulesParser } from "./rules/server-browser-protocol-3-parser";
+import { type ValveRules } from "./rules/valve-rule-parser";
 
 type ValveProtocolQueryResponseMap = {
   INFO: ValveServerInfo;
   SERVERQUERY_GETCHALLENGE: ValveChallenge;
   PLAYERS: ValvePlayers;
   PING: ValvePing;
+  RULES: ValveRules;
 };
+
+/** Parameters for querying Valve rules with a game-specific parser. */
+export type ValveRulesQueryParams<Result = ValveRules> = {
+  /** Valve rules request opcode. */
+  opcode: "RULES";
+  /**
+   * Parses the raw Valve rules response into a game-specific model.
+   * In most cases, use the {@link valveRulesParser | default Valve rules parser}.
+   *
+   * @param cursor Cursor positioned at the first byte after the response opcode.
+   * @returns The parsed game-specific rules model.
+   */
+  parser: (cursor: BufferCursor) => Result;
+};
+
+/** Parameters for querying a Valve opcode and optionally customizing RULES parsing. */
+export type ValveProtocolQueryParams<
+  Opcode extends ValveProtocolRequestOpcode,
+  Result = ValveProtocolQueryResponseMap[Opcode],
+> = Opcode extends "RULES"
+  ? ValveRulesQueryParams<Result>
+  : {
+      /** Valve request opcode to query. */
+      opcode: Opcode;
+    };
+
+/** Client for querying servers that implement the Valve server query protocol. */
+export interface ValveProtocol {
+  /** Queries one Valve opcode and resolves with its parsed response model. */
+  query<Opcode extends ValveProtocolRequestOpcode, Result = ValveProtocolQueryResponseMap[Opcode]>(
+    params: ValveProtocolQueryParams<Opcode, Result>,
+  ): Promise<Result>;
+}
 
 const deserializers = {
   INFO: deserializeInfoPacket,
   SERVERQUERY_GETCHALLENGE: deserializeChallengePacket,
   PLAYERS: deserializePlayersPacket,
   PING: deserializePingPacket,
-} as const satisfies Record<ValveProtocolRequestOpcode, ValvePacketDeserializeFn>;
+} as const satisfies Record<Exclude<ValveProtocolRequestOpcode, "RULES">, ValvePacketDeserializeFn>;
 
+/** Connection and retry settings used to create a Valve protocol client. */
 export type CreateValveProtocolParams = CreateUdpSocketParams & CreateUdpSocketOptions;
 
 type ValveProtocolRequestParams = {
@@ -48,12 +82,18 @@ type ValveProtocolRequestParams = {
   challenge?: number;
 };
 
+/**
+ * Creates a client for querying servers that implement the Valve server query protocol.
+ * @param params Target server and UDP transport settings.
+ * @returns A client whose `query` method returns the response type for the requested opcode.
+ */
 export const createValveProtocol = ({
   host,
   port,
+  retry = defaultRetryOptions,
   ...socketOptions
-}: CreateValveProtocolParams) => {
-  async function _request(socket: UdpSocket, params: ValveProtocolRequestParams): Promise<Buffer> {
+}: CreateValveProtocolParams): ValveProtocol => {
+  async function request(socket: UdpSocket, params: ValveProtocolRequestParams): Promise<Buffer> {
     const payload = buildRequestPacket(params);
     const packets = await socket.send(
       { payload },
@@ -92,42 +132,43 @@ export const createValveProtocol = ({
       if (params.opcode === "SERVERQUERY_GETCHALLENGE") {
         return response;
       }
-      return _request(socket, { opcode: params.opcode, challenge: responseChallenge });
+      return request(socket, { opcode: params.opcode, challenge: responseChallenge });
     }
 
     return response;
   }
 
-  const query = async <Opcode extends ValveProtocolRequestOpcode>(
-    params: ValveProtocolQueryParams<Opcode>,
-  ): Promise<ValveProtocolQueryResponseMap[Opcode]> => {
-    using socket = createUdpSocket({ host, port }, socketOptions);
-    const response = await _request(socket, { opcode: params.opcode });
+  const query = async <
+    Opcode extends ValveProtocolRequestOpcode,
+    Result = ValveProtocolQueryResponseMap[Opcode],
+  >(
+    params: ValveProtocolQueryParams<Opcode, Result>,
+  ): Promise<Result> => {
+    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry });
+    const response = await request(socket, { opcode: params.opcode });
     const cursor = new BufferCursor(response);
-    return deserializers[params.opcode](cursor) as ValveProtocolQueryResponseMap[Opcode];
+    cursor.readUInt8(); // advance past the response opcode
+
+    if (params.opcode !== "RULES") {
+      return deserializers[params.opcode](cursor) as Result;
+    }
+
+    return params.parser(cursor);
   };
 
   return { query };
 };
 
-export type ValveProtocol = ReturnType<typeof createValveProtocol>;
+// console.log(
+//   await createValveProtocol({
+//     host: "193.25.252.15",
+//     port: 27016,
+//   }).query({ opcode: "RULES", parser: serverBrowserProtocol2RulesParser }),
+// );
 
-const protocol = createValveProtocol({ host: "193.25.252.15", port: 27016 });
-
-console.dir(
-  await Promise.allSettled([
-    protocol.query({
-      opcode: "INFO",
-    }),
-    protocol.query({
-      opcode: "SERVERQUERY_GETCHALLENGE",
-    }),
-    protocol.query({
-      opcode: "PLAYERS",
-    }),
-    protocol.query({
-      opcode: "PING",
-    }),
-  ]),
-  { depth: null },
+console.log(
+  await createValveProtocol({
+    host: "142.44.169.172",
+    port: 2303,
+  }).query({ opcode: "RULES", parser: serverBrowserProtocol3RulesParser }),
 );

@@ -10,5 +10,7 @@ export const requestOpcodes = {
   PING: 112,
 } as const;
 
+/** Symbolic opcode accepted by an open.mp query. */
 export type OpenMPProtocolRequestOpcode = keyof typeof requestOpcodes;
+/** Numeric wire value for an open.mp request opcode. */
 export type OpenMPProtocolRequestOpcodeValue = (typeof requestOpcodes)[keyof typeof requestOpcodes];
