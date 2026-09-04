@@ -23,7 +23,6 @@ import {
   deserializePlayersPacket,
   ValvePacketDeserializeFn,
 } from "./packet/serde";
-import { serverBrowserProtocol3RulesParser } from "./rules/server-browser-protocol-3-parser";
 import { type ValveRules } from "./rules/valve-rule-parser";
 
 type ValveProtocolQueryResponseMap = {
@@ -171,17 +170,3 @@ export const createValveProtocol = ({
 
   return { query };
 };
-
-// console.log(
-//   await createValveProtocol({
-//     host: "193.25.252.15",
-//     port: 27016,
-//   }).query({ opcode: "RULES", parser: serverBrowserProtocol2RulesParser }),
-// );
-
-console.log(
-  await createValveProtocol({
-    host: "142.44.169.172",
-    port: 2303,
-  }).query({ opcode: "RULES", parser: serverBrowserProtocol3RulesParser }),
-);
