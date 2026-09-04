@@ -23,17 +23,19 @@ export class IncompleteServerBrowserProtocolMessageError extends Error {
 }
 
 type InvalidServerBrowserProtocolEscapeSequenceErrorCtor = {
-  marker: number;
+  marker?: number;
 };
 
 /** Error thrown when a page payload contains an unrecognized 0x01-prefixed escape sequence. */
 export class InvalidServerBrowserProtocolEscapeSequenceError extends Error {
   /** Byte following the 0x01 escape marker. */
-  public readonly marker: number;
+  public readonly marker?: number;
 
   constructor({ marker }: InvalidServerBrowserProtocolEscapeSequenceErrorCtor) {
     super(
-      `Invalid server browser protocol escape sequence: 0x01 0x${marker.toString(16).padStart(2, "0")}`,
+      marker === undefined
+        ? "Invalid server browser protocol escape sequence: truncated 0x01 escape marker"
+        : `Invalid server browser protocol escape sequence: 0x01 0x${marker.toString(16).padStart(2, "0")}`,
     );
     this.name = this.constructor.name;
     this.marker = marker;

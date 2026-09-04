@@ -73,6 +73,9 @@ const unescapePages = (pages: ServerBrowserProtocolPage[]): Buffer => {
       bytes.push(escaped[index]);
       continue;
     }
+    if (index + 1 >= escaped.length) {
+      throw new InvalidServerBrowserProtocolEscapeSequenceError({});
+    }
     const value = escaped[++index];
     if (value === 0x01) bytes.push(0x01);
     else if (value === 0x02) bytes.push(0x00);

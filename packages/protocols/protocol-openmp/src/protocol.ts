@@ -99,6 +99,7 @@ export const createOpenMPProtocol = ({
       },
       {
         accept: (packet) => {
+          if (packet.length < packetHeaderLength) return false;
           const cursor = new BufferCursor(packet);
           const packetHeader = cursor.readBytes(packetHeaderLength);
           return packetHeader.equals(requestPacket);

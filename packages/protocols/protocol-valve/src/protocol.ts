@@ -74,6 +74,14 @@ const deserializers = {
   PING: deserializePingPacket,
 } as const satisfies Record<Exclude<ValveProtocolRequestOpcode, "RULES">, ValvePacketDeserializeFn>;
 
+const queryResponseOpcodes = {
+  INFO: responseOpcodes.INFO,
+  SERVERQUERY_GETCHALLENGE: responseOpcodes.CHALLENGE,
+  PLAYERS: responseOpcodes.PLAYERS,
+  PING: responseOpcodes.PING,
+  RULES: responseOpcodes.RULES,
+} as const satisfies Record<ValveProtocolRequestOpcode, number>;
+
 /** Connection and retry settings used to create a Valve protocol client. */
 export type CreateValveProtocolParams = CreateUdpSocketParams & CreateUdpSocketOptions;
 
@@ -147,7 +155,12 @@ export const createValveProtocol = ({
     using socket = createUdpSocket({ host, port }, { ...socketOptions, retry });
     const response = await request(socket, { opcode: params.opcode });
     const cursor = new BufferCursor(response);
-    cursor.readUInt8(); // advance past the response opcode
+    const responseOpcode = cursor.readUInt8();
+    if (responseOpcode !== queryResponseOpcodes[params.opcode]) {
+      throw new Error(
+        `Unexpected Valve response opcode: expected 0x${queryResponseOpcodes[params.opcode].toString(16).padStart(2, "0")}, got 0x${responseOpcode.toString(16).padStart(2, "0")}`,
+      );
+    }
 
     if (params.opcode !== "RULES") {
       return deserializers[params.opcode](cursor) as Result;

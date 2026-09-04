@@ -27,9 +27,13 @@ export type ValveProtocolResponseTypeOpcode = keyof typeof responseTypeOpcodes;
 export type ValveProtocolResponseTypeOpcodeValue =
   (typeof responseTypeOpcodes)[keyof typeof responseTypeOpcodes];
 
-/** Response payload opcodes handled specially by the protocol client. */
+/** Recognized Valve response payload opcodes. */
 export const responseOpcodes = {
   CHALLENGE: 0x41,
+  INFO: 0x49,
+  PLAYERS: 0x44,
+  RULES: 0x45,
+  PING: 0x6a,
 } as const;
 
 /** Symbolic opcode for a recognized Valve response payload. */

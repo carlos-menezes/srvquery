@@ -16,7 +16,7 @@ export const valveRulesParser = (cursor: BufferCursor): ValveRules => {
   return ValveRulesSchema.parse(rules);
 };
 
-/** Validates decoded string rules and preserved binary rules from an `A2S_RULES` response. */
+/** Validates decoded string rules from an `A2S_RULES` response. */
 export const ValveRulesSchema = z.array(
   z.object({
     name: z.string(),
@@ -24,5 +24,5 @@ export const ValveRulesSchema = z.array(
   }),
 );
 
-/** String and binary rules returned by a Valve `A2S_RULES` response. */
+/** String rules returned by a Valve `A2S_RULES` response. */
 export type ValveRules = z.infer<typeof ValveRulesSchema>;

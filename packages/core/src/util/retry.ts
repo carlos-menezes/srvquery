@@ -32,6 +32,9 @@ export const defaultRetryOptions = Object.freeze({
  */
 export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions): Promise<T> {
   const { retries, strategy, fatal } = options;
+  if (!Number.isInteger(retries) || retries < 1) {
+    throw new RangeError("Retry option 'retries' must be a positive integer");
+  }
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
