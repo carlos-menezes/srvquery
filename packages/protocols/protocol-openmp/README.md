@@ -30,25 +30,6 @@ console.log(`${info.hostname}: ${info.players}/${info.maxPlayers}`);
 console.log({ rules, clients, players, ping });
 ```
 
-## Retries
-
-Queries use three attempts with exponential backoff by default. Customize the behavior when
-creating the client:
-
-```ts
-const openmp = createOpenMPProtocol({
-  host: "127.0.0.1",
-  port: 7777,
-  retry: {
-    retries: 5,
-    strategy: (attempt) => attempt * 250,
-    fatal: (error) => error instanceof TypeError,
-  },
-});
-```
-
-Set `retries` to `1` to disable retries.
-
 ## Query types
 
 | Opcode        | Wire value | Description                                           |
