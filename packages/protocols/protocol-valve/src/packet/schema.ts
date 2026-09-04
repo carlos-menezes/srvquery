@@ -74,7 +74,9 @@ export const ValveRulesSchema = z.object({
   rules: z.record(z.string(), z.string()),
   binaryRules: z.array(ValveBinaryRuleSchema),
 });
-export const ValvePingSchema = z.literal(true);
+export const ValvePingSchema = z.object({
+  payload: z.string(),
+});
 export const ValveChallengeSchema = int32;
 
 export type ValvePlayer = z.infer<typeof ValvePlayerSchema>;

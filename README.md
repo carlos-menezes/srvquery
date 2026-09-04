@@ -28,11 +28,12 @@ Each layer can be used independently. Protocol packages build on `@srvquery/core
 
 ## Packages
 
-| Package                                                         | Purpose                                        |
-| --------------------------------------------------------------- | ---------------------------------------------- |
-| [`@srvquery/core`](packages/core)                               | UDP transport and binary parsing primitives    |
-| [`@srvquery/protocol-valve`](packages/protocols/protocol-valve) | Valve server query protocol client and schemas |
-| [`@srvquery/game-dayz`](packages/games/game-dayz)               | DayZ-specific refinement of Valve rules        |
+| Package                                                                   | Purpose                                                  |
+| ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [`@srvquery/core`](packages/core)                                         | UDP transport and binary parsing primitives              |
+| [`@srvquery/protocol-valve`](packages/protocols/protocol-valve)           | Valve server query protocol client and schemas           |
+| [`@srvquery/protocol-gtasa-samp`](packages/protocols/protocol-gtasa-samp) | SA-MP / open.mp server query protocol client and schemas |
+| [`@srvquery/game-dayz`](packages/games/game-dayz)                         | DayZ-specific refinement of Valve rules                  |
 
 ## Game support
 
@@ -52,16 +53,14 @@ pnpm add @srvquery/core @srvquery/protocol-valve @srvquery/game-dayz
 ## Usage
 
 ```ts
-import { UdpQuerySocket } from "@srvquery/core";
 import { dayzRuleParser } from "@srvquery/game-dayz";
 import { createValveProtocol } from "@srvquery/protocol-valve";
 
-using socket = new UdpQuerySocket({
+const valve = createValveProtocol({
   host: "127.0.0.1",
   port: 2302,
 });
 
-const valve = createValveProtocol({ socket });
 const info = await valve.query("INFO");
 const dayz = await valve.query("RULES", { parser: dayzRuleParser });
 

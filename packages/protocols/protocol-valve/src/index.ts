@@ -1,11 +1,7 @@
 export {
   createValveProtocol,
+  type CreateValveProtocolParams,
   type ValveProtocol,
-  type ValveProtocolOptions,
-  type ValveProtocolQueryOptions,
-  type ValveProtocolQueryResult,
-  type ValveProtocolQueryType,
-  type ValveProtocolRequestOptions,
 } from "./protocol";
 export {
   ValveChallengeSchema,
@@ -22,4 +18,4 @@ export {
   type ValvePlayers,
   type ValveRules,
   type ValveServerInfo,
-} from "./schema";
+} from "./packet/schema";

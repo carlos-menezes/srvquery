@@ -14,16 +14,14 @@ pnpm add @srvquery/game-dayz
 ## Usage
 
 ```ts
-import { UdpQuerySocket } from "@srvquery/core";
 import { dayzRuleParser } from "@srvquery/game-dayz";
 import { createValveProtocol } from "@srvquery/protocol-valve";
 
-using socket = new UdpQuerySocket({
+const valve = createValveProtocol({
   host: "127.0.0.1",
   port: 2302,
 });
 
-const valve = createValveProtocol({ socket });
 const rules = await valve.query("RULES", { parser: dayzRuleParser });
 
 console.log(rules.mods);

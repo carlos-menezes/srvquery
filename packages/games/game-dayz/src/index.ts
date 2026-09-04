@@ -1,4 +1,3 @@
-import { UdpQuerySocket } from "@srvquery/core";
 import { createValveProtocol } from "@srvquery/protocol-valve";
 import { dayzRuleParser } from "./rules";
 
@@ -12,16 +11,11 @@ export {
   type DayZRules,
 } from "./schema";
 
-using socket = new UdpQuerySocket({
+const proto = createValveProtocol({
   host: "168.100.162.38",
   port: 27016,
-  retries: 1,
 });
 {
-  const proto = createValveProtocol({
-    socket,
-  });
-
   const info = await proto.query("INFO");
   console.log(info);
   const rules = await proto.query("RULES", { parser: dayzRuleParser });
