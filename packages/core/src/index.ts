@@ -4,9 +4,22 @@ export { BufferCursor } from "./bin/buffer-cursor";
 
 //#region net/
 export {
-  type UdpQuerySocketCtor,
+  type CreateUdpSocketOptions,
+  type CreateUdpSocketParams,
   type UdpSocketSendOptions,
-  UdpQuerySocket,
+  type UdpSocketSendParams,
+  type UdpSocket,
+  createUdpSocket,
 } from "./net/udp-socket";
 export { QuerySocketError, QueryTimeoutError } from "./net/errors";
+//#endregion
+
+//#region util/
+export {
+  type RetryOptions,
+  type RetryStrategy,
+  backoffStrategy,
+  defaultRetryOptions,
+  withRetry,
+} from "./util/retry";
 //#endregion

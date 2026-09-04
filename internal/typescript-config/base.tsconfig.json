@@ -5,6 +5,7 @@
     "strict": true,
     "esModuleInterop": true,
     "lib": ["ESNext"],
-    "module": "esnext"
+    "module": "esnext",
+    "declarationMap": true
   }
 }

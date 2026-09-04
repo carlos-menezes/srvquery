@@ -1,5 +1,5 @@
 {
-  "name": "@srvquery/game-dayz",
+  "name": "@srvquery/protocol-openmp",
   "version": "0.0.0",
   "files": [
     "dist"
@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@srvquery/core": "workspace:*",
-    "@srvquery/protocol-valve": "workspace:*",
     "zod": "^4.5.4"
   },
   "devDependencies": {

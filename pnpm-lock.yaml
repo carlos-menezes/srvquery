@@ -60,14 +60,11 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.6.1)(yaml@2.9.0))
 
-  packages/games/game-dayz:
+  packages/protocols/protocol-openmp:
     dependencies:
       '@srvquery/core':
         specifier: workspace:*
         version: link:../../core
-      '@srvquery/protocol-valve':
-        specifier: workspace:*
-        version: link:../../protocols/protocol-valve
       zod:
         specifier: ^4.5.4
         version: 4.5.4

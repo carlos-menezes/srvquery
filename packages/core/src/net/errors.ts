@@ -9,8 +9,11 @@ type QueryTimeoutErrorCtor = {
  * configured timeout window, after all retries have been exhausted.
  */
 export class QueryTimeoutError extends Error {
+  /** Host targeted by the query. */
   public readonly host: string;
+  /** Port targeted by the query. */
   public readonly port: number;
+  /** Total number of attempts made before the timeout was reported. */
   public readonly attempts: number;
 
   constructor({ host, port, attempts }: QueryTimeoutErrorCtor) {
@@ -34,6 +37,7 @@ type QuerySocketErrorCtor = {
  * (e.g. DNS resolution failure, ECONNREFUSED, EHOSTUNREACH).
  */
 export class QuerySocketError extends Error {
+  /** Original socket error that caused the query to fail. */
   public readonly cause: unknown;
 
   constructor({ message, cause }: QuerySocketErrorCtor) {
