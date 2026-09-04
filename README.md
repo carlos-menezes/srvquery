@@ -1,4 +1,4 @@
-![srvquery](https://shieldcn.dev/header/glow.svg?title=srvquery&subtitle=The+composable+TypeScript+toolkit+for+querying+game+servers.&logo=lu%3ARadar&size=wide&mode=dark&theme=emerald&font=geist)
+![srvquery](https://shieldcn.dev/header/glow.svg?title=srvquery&subtitle=The+composable+TypeScript+toolkit+for+querying+game+servers.&logo=false&size=wide&mode=dark&theme=emerald&align=left&font=space-grotesk)
 
 ![GitHub CI](https://shieldcn.dev/github/ci/carlos-menezes/srvquery.svg?variant=secondary) ![TypeScript](https://shieldcn.dev/badge/TypeScript.svg?variant=branded&brand=typescript) ![pnpm](https://shieldcn.dev/badge/pnpm.svg?variant=branded&brand=pnpm)
 
