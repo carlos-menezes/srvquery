@@ -11,7 +11,10 @@
     "build:packages:protocols": "turbo run build --filter=@srvquery/protocol-*",
     "build:packages:games": "turbo run build --filter=@srvquery/game-*",
     "test": "turbo run test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter=@srvquery/* && changeset publish"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
