@@ -70,24 +70,31 @@ console.log(cursor.remaining); // 2
 console.log(cursor.readRemaining()); // <Buffer dd ee>
 ```
 
-### UdpQuerySocket
+### createUdpSocket
 
 `using` invokes `Symbol.dispose` when the socket leaves scope:
 
 ```ts
-import { UdpQuerySocket } from "@srvquery/core";
+import { createUdpSocket } from "@srvquery/core";
 
-using socket = new UdpQuerySocket({
-  host: "127.0.0.1",
-  port: 27015,
-  timeout: 2_000,
-  retries: 3,
-});
+using socket = createUdpSocket(
+  {
+    host: "127.0.0.1",
+    port: 27015,
+  },
+  {
+    timeout: 2_000,
+    type: "udp4",
+  },
+);
 
-const packets = await socket.send(Buffer.from("status\0"), {
-  accept: (packet) => packet.length > 0,
-  end: (accepted) => accepted.length === 1,
-});
+const packets = await socket.send(
+  { payload: Buffer.from("status\0") },
+  {
+    accept: (packet) => packet.length > 0,
+    end: (accepted) => accepted.length === 1,
+  },
+);
 
 console.log(packets[0]);
 ```
@@ -95,7 +102,7 @@ console.log(packets[0]);
 Call `close` when the lifetime cannot be expressed with `using`:
 
 ```ts
-const socket = new UdpQuerySocket({ host: "127.0.0.1", port: 27015 });
+const socket = createUdpSocket({ host: "127.0.0.1", port: 27015 });
 
 socket.close();
 ```
