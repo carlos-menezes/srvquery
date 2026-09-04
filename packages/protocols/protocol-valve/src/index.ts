@@ -2,6 +2,8 @@ export {
   createValveProtocol,
   type CreateValveProtocolParams,
   type ValveProtocol,
+  type ValveProtocolQueryParams,
+  type ValveRulesQueryParams,
 } from "./protocol";
 export {
   type ValveChallenge,
