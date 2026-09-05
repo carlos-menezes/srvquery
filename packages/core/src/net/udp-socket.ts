@@ -1,5 +1,5 @@
 import dgram from "node:dgram";
-import { QuerySocketError, QueryTimeoutError } from "./errors";
+import { QueryTransportError, QueryTimeoutError } from "./errors";
 import { RetryOptions, withRetry } from "../util/retry";
 
 /** Destination addressed by a UDP query socket. */
@@ -120,7 +120,7 @@ export const createUdpSocket = (
       const onError = (err: Error) => {
         settle(() =>
           reject(
-            new QuerySocketError({
+            new QueryTransportError({
               message: `Socket error querying ${host}:${port}`,
               cause: err,
             }),
@@ -142,7 +142,7 @@ export const createUdpSocket = (
         if (err) {
           settle(() =>
             reject(
-              new QuerySocketError({
+              new QueryTransportError({
                 message: `Failed to send to ${host}:${port}`,
                 cause: err,
               }),
