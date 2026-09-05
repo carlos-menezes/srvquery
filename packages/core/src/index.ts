@@ -11,7 +11,14 @@ export {
   type UdpSocket,
   createUdpSocket,
 } from "./net/udp-socket";
-export { QuerySocketError, QueryTimeoutError } from "./net/errors";
+export {
+  type CreateHttpClientOptions,
+  type CreateHttpClientParams,
+  type HttpClient,
+  createHttpClient,
+} from "./net/http-client";
+export { QueryDnsResolutionError, QueryTransportError, QueryTimeoutError } from "./net/errors";
+export { resolveIpv4 } from "./net/dns";
 //#endregion
 
 //#region util/

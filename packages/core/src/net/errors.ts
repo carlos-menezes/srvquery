@@ -27,22 +27,42 @@ export class QueryTimeoutError extends Error {
   }
 }
 
-type QuerySocketErrorCtor = {
+type QueryTransportErrorCtor = {
   message: string;
   cause: unknown;
 };
 
 /**
- * Error thrown for low-level socket failures unrelated to timeout
- * (e.g. DNS resolution failure, ECONNREFUSED, EHOSTUNREACH).
+ * Error thrown for transport-level failures unrelated to timeout: low-level socket failures
+ * (e.g. `ECONNREFUSED`, `EHOSTUNREACH`), non-2xx HTTP responses, and malformed response bodies.
  */
-export class QuerySocketError extends Error {
-  /** Original socket error that caused the query to fail. */
+export class QueryTransportError extends Error {
+  /** Original error that caused the query to fail, if any. */
   public readonly cause: unknown;
 
-  constructor({ message, cause }: QuerySocketErrorCtor) {
+  constructor({ message, cause }: QueryTransportErrorCtor) {
     super(message);
     this.name = this.constructor.name;
+    this.cause = cause;
+  }
+}
+
+type QueryDnsResolutionErrorCtor = {
+  host: string;
+  cause: unknown;
+};
+
+/** Error thrown when a hostname cannot be resolved to an IPv4 address. */
+export class QueryDnsResolutionError extends Error {
+  /** Hostname that failed to resolve. */
+  public readonly host: string;
+  /** Original DNS lookup error. */
+  public readonly cause: unknown;
+
+  constructor({ host, cause }: QueryDnsResolutionErrorCtor) {
+    super(`Failed to resolve host "${host}" to an IPv4 address`);
+    this.name = this.constructor.name;
+    this.host = host;
     this.cause = cause;
   }
 }

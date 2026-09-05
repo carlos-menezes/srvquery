@@ -66,6 +66,31 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.6.1)(yaml@2.9.0))
 
+  packages/protocols/protocol-fivem:
+    dependencies:
+      '@srvquery/core':
+        specifier: workspace:*
+        version: link:../../core
+      zod:
+        specifier: ^4.5.4
+        version: 4.5.4
+    devDependencies:
+      '@internal/typescript-config':
+        specifier: workspace:*
+        version: link:../../../internal/typescript-config
+      '@types/node':
+        specifier: ^26.4.1
+        version: 26.4.1
+      rolldown:
+        specifier: catalog:tooling
+        version: 1.2.7
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(jiti@2.6.1)(yaml@2.9.0))
+
   packages/protocols/protocol-openmp:
     dependencies:
       '@srvquery/core':
