@@ -36,11 +36,12 @@ flowchart LR
 
 ## Packages
 
-| Package                                                           | Version                                                                                                                       | Purpose                                                  |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [`@srvquery/core`](packages/core)                                 | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)                       | UDP transport and binary parsing primitives              |
-| [`@srvquery/protocol-valve`](packages/protocols/protocol-valve)   | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-valve)](https://www.npmjs.com/package/@srvquery/protocol-valve)   | Valve server query protocol client and schemas           |
-| [`@srvquery/protocol-openmp`](packages/protocols/protocol-openmp) | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-openmp)](https://www.npmjs.com/package/@srvquery/protocol-openmp) | SA-MP / open.mp server query protocol client and schemas |
+| Package                                                           | Version                                                                                                                       | Purpose                                                        |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [`@srvquery/core`](packages/core)                                 | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)                       | UDP/HTTP transport and binary parsing primitives               |
+| [`@srvquery/protocol-valve`](packages/protocols/protocol-valve)   | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-valve)](https://www.npmjs.com/package/@srvquery/protocol-valve)   | Valve server query protocol client and schemas                 |
+| [`@srvquery/protocol-openmp`](packages/protocols/protocol-openmp) | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-openmp)](https://www.npmjs.com/package/@srvquery/protocol-openmp) | SA-MP / open.mp server query protocol client and schemas       |
+| [`@srvquery/protocol-fivem`](packages/protocols/protocol-fivem)   | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-fivem)](https://www.npmjs.com/package/@srvquery/protocol-fivem)   | FiveM / RedM (FXServer) HTTP query protocol client and schemas |
 
 ## Installation
 
@@ -50,6 +51,8 @@ Install the layers needed by your application. Most consumers only need one prot
 pnpm add @srvquery/protocol-valve
 # or
 pnpm add @srvquery/protocol-openmp
+# or
+pnpm add @srvquery/protocol-fivem
 ```
 
 Add `@srvquery/core` directly only if you need its transport or binary primitives on their own (for example, to implement a new protocol):
@@ -78,7 +81,7 @@ Protocol clients make up to three attempts for each UDP request by default. Betw
 Customize retries when creating a protocol client:
 
 ```ts
-import { QuerySocketError, backoffStrategy } from "@srvquery/core";
+import { QueryTransportError, backoffStrategy } from "@srvquery/core";
 import { createValveProtocol } from "@srvquery/protocol-valve";
 
 const server = createValveProtocol({
@@ -87,7 +90,7 @@ const server = createValveProtocol({
   retry: {
     retries: 5,
     strategy: backoffStrategy,
-    fatal: (error) => error instanceof QuerySocketError,
+    fatal: (error) => error instanceof QueryTransportError,
   },
 });
 ```
@@ -100,21 +103,21 @@ const server = createValveProtocol({
 
 Queries can fail in two distinct ways, both exported from `@srvquery/core` so you can branch on `instanceof`:
 
-| Error               | Thrown when                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| `QueryTimeoutError` | No response was received within the timeout window, after all retries were exhausted.               |
-| `QuerySocketError`  | A low-level socket failure occurred (DNS resolution failure, `ECONNREFUSED`, `EHOSTUNREACH`, etc.). |
+| Error                 | Thrown when                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `QueryTimeoutError`   | No response was received within the timeout window, after all retries were exhausted.                      |
+| `QueryTransportError` | A transport-level failure occurred: a socket error, a non-2xx HTTP response, or a malformed response body. |
 
 ```ts
-import { QuerySocketError, QueryTimeoutError } from "@srvquery/core";
+import { QueryTransportError, QueryTimeoutError } from "@srvquery/core";
 
 try {
   const info = await server.query({ opcode: "INFO" });
 } catch (error) {
   if (error instanceof QueryTimeoutError) {
     console.error(`${error.host}:${error.port} did not respond after ${error.attempts} attempt(s)`);
-  } else if (error instanceof QuerySocketError) {
-    console.error("Socket failure:", error.cause);
+  } else if (error instanceof QueryTransportError) {
+    console.error("Transport failure:", error.cause);
   } else {
     throw error;
   }

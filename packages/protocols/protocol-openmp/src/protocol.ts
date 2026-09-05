@@ -4,10 +4,10 @@ import {
   CreateUdpSocketOptions,
   CreateUdpSocketParams,
   defaultRetryOptions,
+  resolveIpv4,
   UdpSocket,
 } from "@srvquery/core";
 import { randomBytes } from "node:crypto";
-import { resolveIpv4 } from "./net/dns";
 import { buildRequestPacket, packetHeaderLength } from "./packet/request";
 import { OpenMPProtocolRequestOpcode } from "./packet/opcodes";
 import {

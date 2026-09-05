@@ -8,6 +8,6 @@ export default defineConfig([
       format: "esm",
       cleanDir: true,
     },
-    external: ["node:dgram", "node:dns", "node:crypto"],
+    external: ["node:dgram", "node:dns", "node:crypto", "node:http", "node:https"],
   },
 ]);

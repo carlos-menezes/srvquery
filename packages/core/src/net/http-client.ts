@@ -48,16 +48,7 @@ const transports = { http, https } as const;
 /**
  * Creates a reusable HTTP query client for one destination.
  *
- * Intended for query protocols that expose their state over plain JSON HTTP endpoints (for
- * example, FiveM/RedM's `info.json`, `players.json` and `dynamic.json`) rather than a raw socket
- * protocol. Each `getJson` call is subject to the configured timeout and, when provided, retried
- * according to `options.retry`.
- *
- * Requests are made with `node:http`/`node:https` rather than the global `fetch`. Some game
- * servers run a minimal embedded HTTP server that hangs or drops the connection when it receives
- * headers `fetch` always adds and cannot fully suppress (for example `sec-fetch-mode` or a
- * wildcard `Accept-Language`), so this client only sends the bare minimum headers a plain client
- * like `curl` would.
+ * Intended for query protocols that expose their state over plain JSON HTTP endpoints. Each `getJson` call is subject to the configured timeout and, when provided, retried according to `options.retry`.
  */
 export const createHttpClient = (
   { host, port }: CreateHttpClientParams,
