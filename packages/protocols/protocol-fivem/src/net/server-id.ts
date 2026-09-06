@@ -1,4 +1,4 @@
-import { QueryTransportError, type CreateHttpClientParams } from "@srvquery/core";
+import { defaultTimeout, QueryTransportError, type CreateHttpClientParams } from "@srvquery/core";
 
 type CfxServerListResponse = {
   Data?: {
@@ -12,15 +12,23 @@ type CfxServerListResponse = {
  * list API for the server's advertised connect endpoints.
  *
  * @param id The Cfx.re server id.
+ * @param timeout Time in milliseconds to wait for the lookup before aborting.
  * @returns The resolved host and port pair for the server's HTTP query endpoints.
- * @throws {QueryTransportError} If the id is unknown or resolves to no usable endpoint.
+ * @throws {QueryTransportError} If the id is unknown, the lookup times out, or it resolves to no
+ * usable IPv4 endpoint.
  */
-export const resolveServerId = async (id: string): Promise<CreateHttpClientParams> => {
+export const resolveServerId = async (
+  id: string,
+  timeout = defaultTimeout,
+): Promise<CreateHttpClientParams> => {
   const url = `https://frontend.cfx-services.net/api/servers/single/${id}`;
   let body: CfxServerListResponse;
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: controller.signal });
 
     if (!response.ok) {
       throw new QueryTransportError({
@@ -32,10 +40,18 @@ export const resolveServerId = async (id: string): Promise<CreateHttpClientParam
     body = (await response.json()) as CfxServerListResponse;
   } catch (err) {
     if (err instanceof QueryTransportError) throw err;
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new QueryTransportError({
+        message: `Timed out after ${timeout}ms while resolving server id "${id}"`,
+        cause: err,
+      });
+    }
     throw new QueryTransportError({
       message: `Failed to resolve server id "${id}"`,
       cause: err,
     });
+  } finally {
+    clearTimeout(timer);
   }
 
   const endpoint = body.Data?.connectEndPoints?.[0];
@@ -46,12 +62,14 @@ export const resolveServerId = async (id: string): Promise<CreateHttpClientParam
     });
   }
 
+  // Only IPv4 endpoints are supported; reject anything else (e.g. bracketed IPv6).
   const [host, portString] = endpoint.split(":");
   const port = Number(portString);
+  const isIpv4 = host !== undefined && /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
 
-  if (!host || !Number.isInteger(port)) {
+  if (!isIpv4 || !Number.isInteger(port)) {
     throw new QueryTransportError({
-      message: `Server id "${id}" resolved to an invalid endpoint "${endpoint}"`,
+      message: `Server id "${id}" resolved to an unsupported endpoint "${endpoint}" (only IPv4 is supported)`,
       cause: undefined,
     });
   }

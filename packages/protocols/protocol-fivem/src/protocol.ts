@@ -3,6 +3,7 @@ import {
   CreateHttpClientParams,
   createHttpClient,
   defaultRetryOptions,
+  defaultTimeout,
   type HttpClient,
 } from "@srvquery/core";
 import { deepStripFiveMFormattingCodes } from "./packet/formatting";
@@ -72,9 +73,12 @@ const schemas = {
  * @param params Target server (by `host`/`port` or `id`) and HTTP transport settings.
  * @returns A client whose `query` method returns the response type for the requested opcode.
  */
-export const createFiveMProtocol = (params: CreateFiveMProtocolParams): FiveMProtocol => {
-  const { protocol, timeout, retry = defaultRetryOptions, ...locator } = params;
-
+export const createFiveMProtocol = ({
+  protocol,
+  timeout = defaultTimeout,
+  retry = defaultRetryOptions,
+  ...locator
+}: CreateFiveMProtocolParams): FiveMProtocol => {
   let clientPromise: Promise<HttpClient> | undefined;
 
   const getClient = (): Promise<HttpClient> => {

@@ -2,6 +2,7 @@ import http from "node:http";
 import https from "node:https";
 import { QueryTransportError, QueryTimeoutError } from "./errors";
 import { RetryOptions, withRetry } from "../util/retry";
+import { defaultTimeout } from "../util/timing";
 
 /** Destination addressed by an HTTP query client. */
 export type CreateHttpClientParams = {
@@ -52,7 +53,7 @@ const transports = { http, https } as const;
  */
 export const createHttpClient = (
   { host, port }: CreateHttpClientParams,
-  { protocol = "http", timeout = 2000, retry }: CreateHttpClientOptions = {},
+  { protocol = "http", timeout = defaultTimeout, retry }: CreateHttpClientOptions = {},
 ): HttpClient => {
   const { request } = transports[protocol];
 

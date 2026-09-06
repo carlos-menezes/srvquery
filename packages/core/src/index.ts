@@ -29,4 +29,5 @@ export {
   defaultRetryOptions,
   withRetry,
 } from "./util/retry";
+export { defaultTimeout } from "./util/timing";
 //#endregion
