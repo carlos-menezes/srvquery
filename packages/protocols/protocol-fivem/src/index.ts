@@ -1,4 +1,5 @@
 export { resolveServerId } from "./net/server-id";
+export { stripFiveMFormattingCodes } from "./packet/formatting";
 export {
   type FiveMDynamic,
   type FiveMPlayer,

@@ -1,7 +1,21 @@
 import z from "zod";
 
-/** Validates the `vars` map returned by a FiveM/RedM `info.json` query. */
-export const FiveMVarsSchema = z.record(z.string(), z.string());
+/**
+ * Validates the `vars` map returned by a FiveM/RedM `info.json` query.
+ *
+ * `vars` mirrors whatever `set`/`sets` convars a server operator has defined, so there is no fixed, documented set of keys. The fields below are commonly present across public servers (surfaced by the Cfx server list and/or txAdmin) and are typed for convenience; any other convar is still preserved via the catch-all.
+ */
+export const FiveMVarsSchema = z
+  .object({
+    sv_projectName: z.string().optional(),
+    sv_projectDesc: z.string().optional(),
+    sv_maxClients: z.string().optional(),
+    locale: z.string().optional(),
+    tags: z.string().optional(),
+    banner_connecting: z.string().optional(),
+    banner_detail: z.string().optional(),
+  })
+  .catchall(z.string());
 
 /** Convar-style key/value pairs (`sv_hostname`, `sv_maxClients`, ...) reported by the server. */
 export type FiveMVars = z.infer<typeof FiveMVarsSchema>;

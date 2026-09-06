@@ -5,6 +5,7 @@ import {
   defaultRetryOptions,
   type HttpClient,
 } from "@srvquery/core";
+import { deepStripFiveMFormattingCodes } from "./packet/formatting";
 import { resolveServerId } from "./net/server-id";
 import {
   FiveMDynamicSchema,
@@ -19,7 +20,9 @@ import {
  * Locates a FiveM/RedM server, either directly by `host`/`port` or by its Cfx.re server id (the
  * short code used in join links such as `https://cfx.re/join/<id>`).
  */
-export type FiveMServerLocator = CreateHttpClientParams | { id: string };
+export type FiveMServerLocator =
+  | (CreateHttpClientParams & { id?: never })
+  | { id: string; host?: never; port?: never };
 
 /** Connection and retry settings used to create a FiveM/RedM protocol client. */
 export type CreateFiveMProtocolParams = FiveMServerLocator & CreateHttpClientOptions;
@@ -29,6 +32,8 @@ export type FiveMProtocolRequestOpcode = "INFO" | "PLAYERS" | "DYNAMIC";
 
 type FiveMProtocolQueryParams<Opcode extends FiveMProtocolRequestOpcode> = {
   opcode: Opcode;
+  /** Strip FiveM/RedM `^`-prefixed color/formatting codes from every string in the response. */
+  stripFormattingCodes?: boolean;
 };
 
 type FiveMProtocolResponseMap = {
@@ -74,17 +79,19 @@ export const createFiveMProtocol = (params: CreateFiveMProtocolParams): FiveMPro
 
   const getClient = (): Promise<HttpClient> => {
     clientPromise ??= (
-      "id" in locator ? resolveServerId(locator.id) : Promise.resolve(locator)
+      locator.id !== undefined ? resolveServerId(locator.id) : Promise.resolve(locator)
     ).then((target) => createHttpClient(target, { protocol, timeout, retry }));
     return clientPromise;
   };
 
   const query = async <Opcode extends FiveMProtocolRequestOpcode>({
     opcode,
+    stripFormattingCodes,
   }: FiveMProtocolQueryParams<Opcode>): Promise<FiveMProtocolResponseMap[Opcode]> => {
     const client = await getClient();
     const body = await client.getJson(endpoints[opcode]);
-    return schemas[opcode].parse(body) as FiveMProtocolResponseMap[Opcode];
+    const parsed = schemas[opcode].parse(body) as FiveMProtocolResponseMap[Opcode];
+    return stripFormattingCodes ? deepStripFiveMFormattingCodes(parsed) : parsed;
   };
 
   return {
