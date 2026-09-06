@@ -78,9 +78,16 @@ export const createFiveMProtocol = (params: CreateFiveMProtocolParams): FiveMPro
   let clientPromise: Promise<HttpClient> | undefined;
 
   const getClient = (): Promise<HttpClient> => {
-    clientPromise ??= (
-      locator.id !== undefined ? resolveServerId(locator.id) : Promise.resolve(locator)
-    ).then((target) => createHttpClient(target, { protocol, timeout, retry }));
+    if (!clientPromise) {
+      clientPromise = (
+        locator.id !== undefined ? resolveServerId(locator.id) : Promise.resolve(locator)
+      )
+        .then((target) => createHttpClient(target, { protocol, timeout, retry }))
+        .catch((err) => {
+          clientPromise = undefined;
+          throw err;
+        });
+    }
     return clientPromise;
   };
 
