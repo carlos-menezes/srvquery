@@ -63,6 +63,14 @@ export const createHttpClient = (
         const chunks: Buffer[] = [];
 
         res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("error", (err) => {
+          reject(
+            new QueryTransportError({
+              message: `HTTP response error from ${protocol}://${host}:${port}${path}`,
+              cause: err,
+            }),
+          );
+        });
         res.on("end", () => {
           const { statusCode = 0 } = res;
 
