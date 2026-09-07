@@ -36,26 +36,24 @@ flowchart LR
 
 ## Packages
 
-| Package                                                           | Version                                                                                                                       | Purpose                                                        |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [`@srvquery/core`](packages/core)                                 | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)                       | UDP/HTTP transport and binary parsing primitives               |
-| [`@srvquery/protocol-valve`](packages/protocols/protocol-valve)   | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-valve)](https://www.npmjs.com/package/@srvquery/protocol-valve)   | Valve server query protocol client and schemas                 |
-| [`@srvquery/protocol-openmp`](packages/protocols/protocol-openmp) | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-openmp)](https://www.npmjs.com/package/@srvquery/protocol-openmp) | SA-MP / open.mp server query protocol client and schemas       |
-| [`@srvquery/protocol-fivem`](packages/protocols/protocol-fivem)   | [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-fivem)](https://www.npmjs.com/package/@srvquery/protocol-fivem)   | FiveM / RedM (FXServer) HTTP query protocol client and schemas |
+- [`@srvquery/core`](packages/core): UDP/HTTP transport and binary parsing primitives. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fcore)](https://www.npmjs.com/package/@srvquery/core)
+
+## Protocols
+
+- [`@srvquery/protocol-valve`](packages/protocols/protocol-valve): Valve server query protocol client and schemas. Supports Counter-Strike 2, Counter-Strike: Source, Team Fortress 2, Garry's Mod, Left 4 Dead, Left 4 Dead 2, Half-Life 2: Deathmatch, Day of Defeat: Source, DayZ, Arma 2, Arma 3, Rust, ARK: Survival Evolved, ARK: Survival Ascended, 7 Days to Die, Conan Exiles, Squad and other A2S-compatible servers. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-valve)](https://www.npmjs.com/package/@srvquery/protocol-valve)
+- [`@srvquery/protocol-openmp`](packages/protocols/protocol-openmp): SA-MP / open.mp server query protocol client and schemas. Supports SA-MP and open.mp. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-openmp)](https://www.npmjs.com/package/@srvquery/protocol-openmp)
+- [`@srvquery/protocol-fivem`](packages/protocols/protocol-fivem): FiveM / RedM (FXServer) HTTP query protocol client and schemas. Supports FiveM and RedM. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-fivem)](https://www.npmjs.com/package/@srvquery/protocol-fivem)
 
 ## Installation
 
-Install the layers needed by your application. Most consumers only need one protocol package, which pulls in `@srvquery/core` as a dependency automatically:
+Install `@srvquery/core` with the protocol package your application needs, e.g.:
 
 ```sh
-pnpm add @srvquery/protocol-valve
-# or
-pnpm add @srvquery/protocol-openmp
-# or
-pnpm add @srvquery/protocol-fivem
+pnpm add @srvquery/core @srvquery/protocol-valve
+# or pnpm add @srvquery/core @srvquery/protocol-<proto>
 ```
 
-Add `@srvquery/core` directly only if you need its transport or binary primitives on their own (for example, to implement a new protocol):
+Install `@srvquery/core` on its own only if you need its transport or binary primitives directly, for example to implement a new protocol:
 
 ```sh
 pnpm add @srvquery/core
