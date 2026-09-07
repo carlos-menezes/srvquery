@@ -7,7 +7,7 @@ Query FiveM and RedM (FXServer) game servers.
 ## Installation
 
 ```sh
-pnpm add @srvquery/protocol-fivem
+pnpm add @srvquery/core @srvquery/protocol-fivem
 ```
 
 ## Usage
