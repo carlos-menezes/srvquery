@@ -4,10 +4,11 @@ import {
   CreateUdpSocketOptions,
   CreateUdpSocketParams,
   defaultRetryOptions,
+  defaultTimeout,
+  resolveIpv4,
   UdpSocket,
 } from "@srvquery/core";
 import { randomBytes } from "node:crypto";
-import { resolveIpv4 } from "./net/dns";
 import { buildRequestPacket, packetHeaderLength } from "./packet/request";
 import { OpenMPProtocolRequestOpcode } from "./packet/opcodes";
 import {
@@ -70,6 +71,7 @@ export const createOpenMPProtocol = ({
   host,
   port,
   retry = defaultRetryOptions,
+  timeout = defaultTimeout,
   ...socketOptions
 }: CreateOpenMPProtocolParams): OpenMPProtocol => {
   const ipv4 = resolveIpv4(host);
@@ -113,7 +115,7 @@ export const createOpenMPProtocol = ({
   const query = async <Opcode extends OpenMPProtocolRequestOpcode>({
     opcode,
   }: OpenMPProtocolQueryParams<Opcode>): Promise<OpenMPProtocolResponseMap[Opcode]> => {
-    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry });
+    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry, timeout });
     const response = await request({ opcode }, socket);
     const cursor = new BufferCursor(response);
     return deserializers[opcode](cursor) as OpenMPProtocolResponseMap[Opcode];

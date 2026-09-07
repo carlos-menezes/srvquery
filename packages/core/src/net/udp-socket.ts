@@ -1,6 +1,7 @@
 import dgram from "node:dgram";
-import { QuerySocketError, QueryTimeoutError } from "./errors";
+import { QueryTransportError, QueryTimeoutError } from "./errors";
 import { RetryOptions, withRetry } from "../util/retry";
+import { defaultTimeout } from "../util/timing";
 
 /** Destination addressed by a UDP query socket. */
 export type CreateUdpSocketParams = {
@@ -72,7 +73,7 @@ export interface UdpSocket {
  */
 export const createUdpSocket = (
   { host, port }: CreateUdpSocketParams,
-  { timeout = 2000, type = "udp4", retry }: CreateUdpSocketOptions = {},
+  { timeout = defaultTimeout, type = "udp4", retry }: CreateUdpSocketOptions = {},
 ): UdpSocket => {
   const socket = dgram.createSocket({ type });
 
@@ -120,7 +121,7 @@ export const createUdpSocket = (
       const onError = (err: Error) => {
         settle(() =>
           reject(
-            new QuerySocketError({
+            new QueryTransportError({
               message: `Socket error querying ${host}:${port}`,
               cause: err,
             }),
@@ -142,7 +143,7 @@ export const createUdpSocket = (
         if (err) {
           settle(() =>
             reject(
-              new QuerySocketError({
+              new QueryTransportError({
                 message: `Failed to send to ${host}:${port}`,
                 cause: err,
               }),

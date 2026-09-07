@@ -4,6 +4,7 @@ import {
   CreateUdpSocketOptions,
   CreateUdpSocketParams,
   defaultRetryOptions,
+  defaultTimeout,
   UdpSocket,
 } from "@srvquery/core";
 import { responseOpcodes, responseTypeOpcodes, ValveProtocolRequestOpcode } from "./packet/opcodes";
@@ -98,6 +99,7 @@ export const createValveProtocol = ({
   host,
   port,
   retry = defaultRetryOptions,
+  timeout = defaultTimeout,
   ...socketOptions
 }: CreateValveProtocolParams): ValveProtocol => {
   async function request(socket: UdpSocket, params: ValveProtocolRequestParams): Promise<Buffer> {
@@ -151,7 +153,7 @@ export const createValveProtocol = ({
   >(
     params: ValveProtocolQueryParams<Opcode, Result>,
   ): Promise<Result> => {
-    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry });
+    using socket = createUdpSocket({ host, port }, { ...socketOptions, retry, timeout });
     const response = await request(socket, { opcode: params.opcode });
     const cursor = new BufferCursor(response);
     const responseOpcode = cursor.readUInt8();

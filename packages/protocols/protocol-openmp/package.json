@@ -18,14 +18,17 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@srvquery/core": "workspace:*",
     "zod": "^4.5.4"
   },
   "devDependencies": {
     "@internal/typescript-config": "workspace:*",
+    "@srvquery/core": "workspace:*",
     "@types/node": "^26.4.1",
     "rolldown": "catalog:tooling",
     "typescript": "catalog:",
     "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@srvquery/core": "workspace:*"
   }
 }
