@@ -35,6 +35,11 @@ type OpenMPProtocolRequestParams<Opcode extends OpenMPProtocolRequestOpcode> = {
   opcode: Opcode;
 };
 
+type OpenMPRequestResult = {
+  packet: Buffer;
+  ping?: { payload: number; startedAt: number };
+};
+
 type OpenMPProtocolQueryParams<Opcode extends OpenMPProtocolRequestOpcode> = {
   opcode: Opcode;
   /** Decodes text fields returned by the server. Defaults to UTF-8. */
@@ -78,13 +83,10 @@ export const createOpenMPProtocol = ({
   ...socketOptions
 }: CreateOpenMPProtocolParams): OpenMPProtocol => {
   const ipv4 = resolveIpv4(host);
-  let pingPayload: number | undefined;
-  let pingStartedAt: number | undefined;
-
-  async function request<Opcode extends OpenMPProtocolRequestOpcode>(
-    { opcode }: OpenMPProtocolRequestParams<Opcode>,
-    socket: UdpSocket,
-  ): Promise<Buffer> {
+  async function request<Opcode extends OpenMPProtocolRequestOpcode>({
+    opcode,
+    socket,
+  }: OpenMPProtocolRequestParams<Opcode> & { socket: UdpSocket }): Promise<OpenMPRequestResult> {
     const requestPacket = buildRequestPacket({
       opcode,
       ip: await ipv4,
@@ -92,14 +94,16 @@ export const createOpenMPProtocol = ({
     });
 
     let payload = requestPacket;
+    let ping: OpenMPRequestResult["ping"];
 
     if (opcode === "PING") {
-      pingStartedAt = Date.now();
-      pingPayload = randomBytes(4).readUInt32LE();
+      const startedAt = Date.now();
+      const pingPayload = randomBytes(4).readUInt32LE();
       const extendedHeader = Buffer.allocUnsafe(packetHeaderLength + 4);
       requestPacket.copy(extendedHeader, 0, 0, packetHeaderLength);
       extendedHeader.writeUInt32LE(pingPayload, packetHeaderLength);
       payload = extendedHeader;
+      ping = { payload: pingPayload, startedAt };
     }
 
     const [packet] = await socket.send(
@@ -116,7 +120,7 @@ export const createOpenMPProtocol = ({
       },
     );
 
-    return packet;
+    return { packet, ping };
   }
 
   const query = async <Opcode extends OpenMPProtocolRequestOpcode>({
@@ -124,16 +128,16 @@ export const createOpenMPProtocol = ({
     decodeText,
   }: OpenMPProtocolQueryParams<Opcode>): Promise<OpenMPProtocolResponseMap[Opcode]> => {
     using socket = createUdpSocket({ host, port }, { ...socketOptions, retry, timeout });
-    const response = await request({ opcode }, socket);
-    const cursor = new BufferCursor(response);
+    const { packet, ping } = await request({ opcode, socket });
+    const cursor = new BufferCursor(packet);
     const result = deserializers[opcode](
       cursor,
       decodeText ?? ((buffer) => buffer.toString("utf8")),
     ) as OpenMPProtocolResponseMap[Opcode];
     if (opcode === "PING") {
-      if (result !== pingPayload)
+      if (result !== ping?.payload)
         throw new Error("open.mp server returned an unexpected ping payload");
-      return (Date.now() - (pingStartedAt ?? Date.now())) as OpenMPProtocolResponseMap[Opcode];
+      return (Date.now() - (ping?.startedAt ?? Date.now())) as OpenMPProtocolResponseMap[Opcode];
     }
     return result;
   };

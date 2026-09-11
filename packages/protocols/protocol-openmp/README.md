@@ -10,6 +10,13 @@ Query GTA:SA multiplayer (SA-MP / open.mp) game servers.
 pnpm add @srvquery/protocol-openmp
 ```
 
+Install `iconv-lite` separately when querying servers that return Cyrillic text using a legacy
+encoding such as Windows-1251:
+
+```sh
+pnpm add iconv-lite
+```
+
 ## Usage
 
 ```ts

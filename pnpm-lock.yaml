@@ -118,9 +118,6 @@ importers:
 
   packages/protocols/protocol-openmp:
     dependencies:
-      iconv:
-        specifier: ^3.0.1
-        version: 3.0.1
       zod:
         specifier: ^4.5.4
         version: 4.5.4
@@ -1048,10 +1045,6 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  iconv@3.0.1:
-    resolution: {integrity: sha512-lJnFLxVc0d82R7GfU7a9RujKVUQ3Eee19tPKWZWBJtAEGRHVEyFzCtbNl3GPKuDnHBBRT4/nDS4Ru9AIDT72qA==}
-    engines: {node: '>=10.0.0'}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -2103,8 +2096,6 @@ snapshots:
   human-id@4.2.1: {}
 
   husky@9.1.7: {}
-
-  iconv@3.0.1: {}
 
   import-fresh@3.3.1:
     dependencies:
