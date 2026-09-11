@@ -18,6 +18,7 @@ import {
   deserializePingPacket,
   deserializePlayersPacket,
   deserializeRulesPacket,
+  type OpenMPTextDecoder,
 } from "./packet/serde";
 import {
   OpenMPClientList,
@@ -36,6 +37,8 @@ type OpenMPProtocolRequestParams<Opcode extends OpenMPProtocolRequestOpcode> = {
 
 type OpenMPProtocolQueryParams<Opcode extends OpenMPProtocolRequestOpcode> = {
   opcode: Opcode;
+  /** Decodes text fields returned by the server. Defaults to UTF-8. */
+  decodeText?: OpenMPTextDecoder;
 };
 
 type OpenMPProtocolResponseMap = {
@@ -75,6 +78,8 @@ export const createOpenMPProtocol = ({
   ...socketOptions
 }: CreateOpenMPProtocolParams): OpenMPProtocol => {
   const ipv4 = resolveIpv4(host);
+  let pingPayload: number | undefined;
+  let pingStartedAt: number | undefined;
 
   async function request<Opcode extends OpenMPProtocolRequestOpcode>(
     { opcode }: OpenMPProtocolRequestParams<Opcode>,
@@ -89,9 +94,11 @@ export const createOpenMPProtocol = ({
     let payload = requestPacket;
 
     if (opcode === "PING") {
+      pingStartedAt = Date.now();
+      pingPayload = randomBytes(4).readUInt32LE();
       const extendedHeader = Buffer.allocUnsafe(packetHeaderLength + 4);
       requestPacket.copy(extendedHeader, 0, 0, packetHeaderLength);
-      randomBytes(4).copy(extendedHeader, packetHeaderLength, 0, 4);
+      extendedHeader.writeUInt32LE(pingPayload, packetHeaderLength);
       payload = extendedHeader;
     }
 
@@ -114,11 +121,21 @@ export const createOpenMPProtocol = ({
 
   const query = async <Opcode extends OpenMPProtocolRequestOpcode>({
     opcode,
+    decodeText,
   }: OpenMPProtocolQueryParams<Opcode>): Promise<OpenMPProtocolResponseMap[Opcode]> => {
     using socket = createUdpSocket({ host, port }, { ...socketOptions, retry, timeout });
     const response = await request({ opcode }, socket);
     const cursor = new BufferCursor(response);
-    return deserializers[opcode](cursor) as OpenMPProtocolResponseMap[Opcode];
+    const result = deserializers[opcode](
+      cursor,
+      decodeText ?? ((buffer) => buffer.toString("utf8")),
+    ) as OpenMPProtocolResponseMap[Opcode];
+    if (opcode === "PING") {
+      if (result !== pingPayload)
+        throw new Error("open.mp server returned an unexpected ping payload");
+      return (Date.now() - (pingStartedAt ?? Date.now())) as OpenMPProtocolResponseMap[Opcode];
+    }
+    return result;
   };
 
   return {

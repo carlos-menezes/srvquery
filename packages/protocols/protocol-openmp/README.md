@@ -41,3 +41,24 @@ console.log({ rules, clients, players, ping });
 | `PING`        | `p`        | Round-trip latency to the server                      |
 
 Reference: [open.mp SA:MP Query Mechanism](https://open.mp/docs/tutorials/QueryMechanism)
+
+## Text encoding
+
+SA-MP servers do not identify the encoding of text fields in query responses. UTF-8 is used by
+default. For servers that use a legacy encoding such as Windows-1251, pass a decoder for the
+returned byte strings:
+
+```ts
+import iconv from "iconv-lite";
+import { createOpenMPProtocol } from "@srvquery/protocol-openmp";
+
+const openmp = createOpenMPProtocol({
+  host: "127.0.0.1",
+  port: 7777,
+});
+
+const info = await openmp.query({
+  opcode: "INFO",
+  decodeText: (buffer) => iconv.decode(buffer, "win1251"),
+});
+```

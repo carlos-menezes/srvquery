@@ -143,17 +143,7 @@ export const createMinecraftJavaProtocol = ({
       if (opcode === "STATUS")
         return parseStatusPacket(statusPacket) as MinecraftJavaProtocolResponseMap[Opcode];
 
-      const startedAt = Date.now();
-      const payload = BigInt(startedAt);
-      socket.write(buildPingPacket({ payload });
-      const pongPacket = await readPacket({ socket, host, port, timeout });
-      const packetId = decodeVarInt({ buffer: pongPacket });
-      if (packetId.value !== 1)
-        throw new Error(`Unexpected Minecraft ping response packet id: ${packetId.value}`);
-      const echoedPayload = pongPacket.readBigInt64BE(packetId.bytes);
-      if (echoedPayload !== payload)
-        throw new Error("Minecraft server returned an unexpected ping payload");
-      return (Date.now() - startedAt) as MinecraftJavaProtocolResponseMap[Opcode];
+      return (await handlePingPacket({ socket })) as MinecraftJavaProtocolResponseMap[Opcode];
     } catch (cause) {
       if (cause instanceof QueryTimeoutError || cause instanceof QueryTransportError) throw cause;
       throw new QueryTransportError({
@@ -163,6 +153,20 @@ export const createMinecraftJavaProtocol = ({
     } finally {
       socket.destroy();
     }
+  };
+
+  const handlePingPacket = async ({ socket }: { socket: net.Socket }): Promise<number> => {
+    const startedAt = Date.now();
+    const payload = BigInt(startedAt);
+    socket.write(buildPingPacket({ payload }));
+    const pongPacket = await readPacket({ socket, host, port, timeout });
+    const packetId = decodeVarInt({ buffer: pongPacket });
+    if (packetId.value !== 1)
+      throw new Error(`Unexpected Minecraft ping response packet id: ${packetId.value}`);
+    const echoedPayload = pongPacket.readBigInt64BE(packetId.bytes);
+    if (echoedPayload !== payload)
+      throw new Error("Minecraft server returned an unexpected ping payload");
+    return Date.now() - startedAt;
   };
 
   const query = async <Opcode extends MinecraftJavaProtocolRequestOpcode>({
