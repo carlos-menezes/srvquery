@@ -53,8 +53,8 @@ export type OpenMPPlayer = z.infer<typeof OpenMPPlayerSchema>;
 /** Detailed player entries returned by an open.mp `PLAYERS` query. */
 export type OpenMPPlayers = z.infer<typeof OpenMPPlayersSchema>;
 
-/** Validates the non-negative latency returned by an open.mp `PING` query. */
+/** Validates the non-negative round-trip latency returned by an open.mp `PING` query. */
 export const OpenMPPingSchema = z.number().nonnegative();
 
-/** Round-trip latency in milliseconds returned by an open.mp `PING` query. */
+/** Round-trip latency in milliseconds measured by an open.mp `PING` query. */
 export type OpenMPPing = z.infer<typeof OpenMPPingSchema>;

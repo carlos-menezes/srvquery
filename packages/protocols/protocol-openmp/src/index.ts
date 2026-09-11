@@ -12,3 +12,4 @@ export {
   type OpenMPRules,
   type OpenMPServerInfo,
 } from "./packet/schema";
+export type { OpenMPTextDecoder } from "./packet/serde";
