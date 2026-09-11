@@ -131,7 +131,6 @@ export const createMinecraftJavaProtocol = ({
     opcode: Opcode;
   }): Promise<MinecraftJavaProtocolResponseMap[Opcode]> => {
     const socket = net.createConnection({ host, port });
-    const startedAt = Date.now();
     try {
       await new Promise<void>((resolve, reject) => {
         socket.once("connect", resolve);
@@ -144,8 +143,9 @@ export const createMinecraftJavaProtocol = ({
       if (opcode === "STATUS")
         return parseStatusPacket(statusPacket) as MinecraftJavaProtocolResponseMap[Opcode];
 
+      const startedAt = Date.now();
       const payload = BigInt(startedAt);
-      socket.write(buildPingPacket({ payload }));
+      socket.write(buildPingPacket({ payload });
       const pongPacket = await readPacket({ socket, host, port, timeout });
       const packetId = decodeVarInt({ buffer: pongPacket });
       if (packetId.value !== 1)
