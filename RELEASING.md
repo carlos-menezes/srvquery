@@ -51,13 +51,13 @@ git commit -m "chore: prepare prerelease"
 git push origin main
 ```
 
-Publish the prerelease after the commit is pushed and verification passes:
+Publish the prerelease after the commit is pushed and verification passes. The repository also provides a manually triggered GitHub Actions workflow for this step. Open the `Release` workflow, select the `main` branch, and run it. The workflow requires an `NPM_TOKEN` repository secret.
 
 ```sh
 pnpm release
 ```
 
-The release script builds the publishable packages and runs `changeset publish`. Configure npm authentication before publishing. Changesets handles package publication and release tags. Do not create package tags manually.
+The release script builds the publishable packages and runs `changeset publish`. The workflow publishes packages, pushes only the package tags created by that run, and creates a GitHub Release for each new package tag. Do not create package tags manually.
 
 Keep prerelease mode active while publishing `next` versions. Do not run `pnpm changeset pre exit` until the packages are ready for a stable release.
 
@@ -89,13 +89,13 @@ git commit -m "chore: prepare release"
 git push origin main
 ```
 
-Publish the stable packages:
+Publish the stable packages with the same manually triggered `Release` workflow, or locally with:
 
 ```sh
 pnpm release
 ```
 
-Stable versions are expected to be `0.0.1` for the initial package release.
+Stable versions are expected to be `0.0.1` for the initial package release. The workflow requires an `NPM_TOKEN` repository secret and creates GitHub Releases for newly published package tags.
 
 ## Changeset Status
 
