@@ -44,6 +44,7 @@ flowchart LR
 - [`@srvquery/protocol-openmp`](packages/protocols/protocol-openmp): SA-MP / open.mp server query protocol client and schemas. Supports SA-MP and open.mp. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-openmp)](https://www.npmjs.com/package/@srvquery/protocol-openmp)
 - [`@srvquery/protocol-fivem`](packages/protocols/protocol-fivem): FiveM / RedM (FXServer) HTTP query protocol client and schemas. Supports FiveM and RedM. [![npm](https://img.shields.io/npm/v/%40srvquery%2Fprotocol-fivem)](https://www.npmjs.com/package/@srvquery/protocol-fivem)
 - [`@srvquery/protocol-minecraft-java`](packages/protocols/protocol-minecraft-java): Minecraft Java Edition Server List Ping protocol client and schemas. Supports direct status and latency queries by host and port.
+- [`@srvquery/protocol-minecraft-bedrock`](packages/protocols/protocol-minecraft-bedrock): Minecraft Bedrock RakNet unconnected ping protocol client and schemas. Supports direct status and latency queries by host and port.
 
 ## Installation
 
