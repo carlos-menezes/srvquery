@@ -9,6 +9,9 @@ export const parseUnconnectedPongPacket = (packet: Buffer) => {
     throw new Error("Invalid RakNet magic in Minecraft Bedrock pong packet");
   }
   const motdLength = packet.readUInt16BE(33);
+  if (packet.length < 35 + motdLength) {
+    throw new Error("Truncated Minecraft Bedrock server MOTD");
+  }
   const motd = packet.subarray(35, 35 + motdLength).toString("utf8");
   const fields = motd.split(";");
   if (fields.length < 12) throw new Error("Invalid Minecraft Bedrock server MOTD");

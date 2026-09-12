@@ -4,7 +4,6 @@ import {
   createUdpSocket,
   defaultRetryOptions,
   defaultTimeout,
-  QueryTransportError,
   type RetryOptions,
   type UdpSocket,
 } from "@srvquery/core";
@@ -61,17 +60,14 @@ export const createMinecraftBedrockProtocol = ({
       const [packet] = await socket.send(
         { payload },
         {
-          accept: (response) => response.length > 0 && response.readUInt8(0) === 0x1c,
+          accept: (response) =>
+            response.length >= 9 &&
+            response.readUInt8(0) === 0x1c &&
+            response.readBigInt64BE(1) === timestamp,
         },
       );
       const status = MinecraftBedrockServerStatusSchema.parse(parseUnconnectedPongPacket(packet));
       if (opcode === "STATUS") return status as MinecraftBedrockResponseMap[Opcode];
-      if (packet.readBigInt64BE(1) !== timestamp) {
-        throw new QueryTransportError({
-          message: `Unexpected Minecraft Bedrock ping payload from ${host}:${port}`,
-          cause: undefined,
-        });
-      }
       return (Date.now() - startedAt) as MinecraftBedrockResponseMap[Opcode];
     } finally {
       socket.close();
